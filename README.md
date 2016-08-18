@@ -27,6 +27,9 @@ Preserving proto comments when generating C# with protobuf-net
     // Generated from: test.proto
     namespace pomelo.test
     {
+      /// <summary>
+      /// This message is used to request a resource from the server
+      /// </summary>
       [global::ProtoBuf.ServiceModel.ProtoComment("This message is used to request a resource from the server")]
       [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"GetResource")]
       public partial class GetResource : global::ProtoBuf.IExtensible
@@ -34,6 +37,9 @@ Preserving proto comments when generating C# with protobuf-net
         public GetResource() {}
         
         private string _resourceId;
+        /// <summary>
+        /// The identifier of the requested resource
+        /// </summary>
         [global::ProtoBuf.ServiceModel.ProtoComment("The identifier of the requested resource")]
         [global::ProtoBuf.ProtoMember(1, IsRequired = true, Name=@"resourceId", DataFormat = global::ProtoBuf.DataFormat.Default)]
         public string resourceId
