@@ -652,22 +652,40 @@ namespace <xsl:value-of select="translate($namespace,':-/\','__..')"/>
   </xsl:template>
   
   <xsl:template match="DescriptorProto/comments/string">
+  /// &lt;summary&gt;
+  /// <xsl:value-of select="."/>
+  /// &lt;summary&gt;
   [global::ProtoBuf.ServiceModel.ProtoComment("<xsl:value-of select="."/>")]</xsl:template>
   
   <xsl:template match="EnumDescriptorProto/comments/string">
+  /// &lt;summary&gt;
+  /// <xsl:value-of select="."/>
+  /// &lt;summary&gt;
   [global::ProtoBuf.ServiceModel.ProtoComment("<xsl:value-of select="."/>")]</xsl:template>
   
   <xsl:template match="ServiceDescriptorProto/comments/string">
+  /// &lt;summary&gt;
+  /// <xsl:value-of select="."/>
+  /// &lt;summary&gt;
   [global::ProtoBuf.ServiceModel.ProtoComment("<xsl:value-of select="."/>")]</xsl:template>
 
   
   <xsl:template match="FieldDescriptorProto/comments/string">
+    /// &lt;summary&gt;
+    /// <xsl:value-of select="."/>
+    /// &lt;summary&gt;
     [global::ProtoBuf.ServiceModel.ProtoComment("<xsl:value-of select="."/>")]</xsl:template>
 
   <xsl:template match="EnumValueDescriptorProto/comments/string">
+    /// &lt;summary&gt;
+    /// <xsl:value-of select="."/>
+    /// &lt;summary&gt;
     [global::ProtoBuf.ServiceModel.ProtoComment("<xsl:value-of select="."/>")]</xsl:template>
   
   <xsl:template match="MethodDescriptorProto/comments/string">
+    /// &lt;summary&gt;
+    /// <xsl:value-of select="."/>
+    /// &lt;summary&gt;
     [global::ProtoBuf.ServiceModel.ProtoComment("<xsl:value-of select="."/>")]
     </xsl:template>
 
