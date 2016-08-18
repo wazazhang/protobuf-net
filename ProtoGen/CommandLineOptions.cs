@@ -22,7 +22,7 @@ namespace ProtoBuf.CodeGenerator
         /// </summary>
         public string WorkingDirectory
         {
-            get { return workingDirectory;}
+            get { return workingDirectory; }
             set { workingDirectory = value; }
         }
 
@@ -60,7 +60,7 @@ namespace ProtoBuf.CodeGenerator
         private int messageCount;
         public int MessageCount { get { return messageCount; } }
         public bool WriteErrorsToFile { get { return writeErrorsToFile; } set { writeErrorsToFile = value; } }
-        public string Template { get { return template;} set { template = value;} }
+        public string Template { get { return template; } set { template = value; } }
         public string DefaultNamespace { get { return defaultNamespace; } set { defaultNamespace = value; } }
         public bool ShowLogo { get { return showLogo; } set { showLogo = value; } }
         public string OutPath { get { return outPath; } set { outPath = value; } }
@@ -129,7 +129,7 @@ namespace ProtoBuf.CodeGenerator
             }
             if (options.InPaths.Count == 0)
             {
-                options.ShowHelp = (string) options.XsltOptions.GetParam("help", "") != "true";
+                options.ShowHelp = (string)options.XsltOptions.GetParam("help", "") != "true";
             }
             return options;
 
@@ -145,7 +145,7 @@ namespace ProtoBuf.CodeGenerator
 
         public CommandLineOptions(TextWriter messageOutput)
         {
-            if(messageOutput == null) throw new ArgumentNullException("messageOutput");
+            if (messageOutput == null) throw new ArgumentNullException("messageOutput");
             this.messageOutput = messageOutput;
 
             // handling this (even trivially) suppresses the default write;
@@ -157,7 +157,7 @@ namespace ProtoBuf.CodeGenerator
 
         private string code;
         public string Code { get { return code; } private set { code = value; } }
-        
+
         public void Execute()
         {
             StringBuilder errors = new StringBuilder();
@@ -218,7 +218,6 @@ namespace ProtoBuf.CodeGenerator
             }
         }
 
-
         private static string LoadFilesAsXml(CommandLineOptions options)
         {
             FileDescriptorSet set = new FileDescriptorSet();
@@ -227,7 +226,7 @@ namespace ProtoBuf.CodeGenerator
             {
                 InputFileLoader.Merge(set, inPath, options.ErrorWriter, options.Arguments.ToArray());
             }
-
+            set = ApplyComment(set);
             XmlSerializer xser = new XmlSerializer(typeof(FileDescriptorSet));
             XmlWriterSettings settings = new XmlWriterSettings();
             settings.Indent = true;
@@ -246,7 +245,7 @@ namespace ProtoBuf.CodeGenerator
             XmlWriterSettings settings = new XmlWriterSettings();
             settings.ConformanceLevel = ConformanceLevel.Auto;
             settings.CheckCharacters = false;
-            
+
             StringBuilder sb = new StringBuilder();
             using (XmlReader reader = XmlReader.Create(new StringReader(xml)))
             using (TextWriter writer = new StringWriter(sb))
@@ -276,5 +275,153 @@ namespace ProtoBuf.CodeGenerator
             }
             return sb.ToString();
         }
+
+
+        private static void ApplyComment(FileDescriptorProto file, SourceCodeInfo.Location location)
+        {
+            if (!string.IsNullOrEmpty(location.leading_comments) ||
+                !string.IsNullOrEmpty(location.trailing_comments))
+            {
+                switch (location.path.Count)
+                {
+                    case 1:
+                        if (location.path[0] == 2)
+                        {
+                            file.comments = GenComments(location);
+                        }
+                        break;
+                    case 2:
+                        if (location.path[0] == 4)
+                        {
+                            // message define
+                            file.message_type[location.path[1]].comments = GenComments(location);
+                        }
+                        else if (location.path[0] == 5)
+                        {
+                            // enum define
+                            file.enum_type[location.path[1]].comments = GenComments(location);
+                        }
+                        else if (location.path[0] == 6)
+                        {
+                            // service define
+                            file.service[location.path[1]].comments = GenComments(location);
+                        }
+                        break;
+                    case 4:
+                        if (location.path[0] == 4 && location.path[2] == 2)
+                        {
+                            // message fields
+                            file.message_type[location.path[1]].field[location.path[3]].comments = GenComments(location);
+                        }
+                        else if (location.path[0] == 4 && location.path[2] == 4)
+                        {
+                            // message enums
+                            file.message_type[location.path[1]].enum_type[location.path[3]].comments = GenComments(location);
+                        }
+                        else if (location.path[0] == 5 && location.path[2] == 2)
+                        {
+                            // enum values
+                            file.enum_type[location.path[1]].value[location.path[3]].comments = GenComments(location);
+                        }
+                        else if (location.path[0] == 6 && location.path[2] == 2)
+                        {
+                            // service methods
+                            file.service[location.path[1]].method[location.path[3]].comments = GenComments(location);
+                        }
+                        break;
+                    case 6:
+                        if (location.path[0] == 4 && location.path[2] == 4 && location.path[4] == 2)
+                        {
+                            // message inner enums values
+                            file.message_type[location.path[1]].enum_type[location.path[3]].value[location.path[5]].comments = GenComments(location);
+                        }
+                        break;
+                }
+            }
+        }
+
+        private static List<string> GenComments(SourceCodeInfo.Location location)
+        {
+            var ret = new List<string>();
+            if (location.path.Count > 1)
+            {
+                if (!string.IsNullOrEmpty(location.leading_comments))
+                {
+                    ret.Add(GenCommentLine(location.leading_comments));
+                }
+                if (!string.IsNullOrEmpty(location.trailing_comments))
+                {
+                    ret.Add(GenCommentLine(location.trailing_comments));
+                }
+            }
+            else
+            {
+                StringBuilder sb = new StringBuilder();
+                if (!string.IsNullOrEmpty(location.leading_comments))
+                {
+                    sb.Append(location.leading_comments);
+                }
+                if (!string.IsNullOrEmpty(location.trailing_comments))
+                {
+                    sb.AppendLine();
+                    sb.Append(location.trailing_comments);
+                }
+                var lines = sb.ToString().Split('\n');
+                ret.AddRange(lines);
+            }
+            return ret;
+        }
+
+        public static string GenCommentLine(string comment)
+        {
+            var lines = comment.Trim().Split('\n');
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < lines.Length; i++)
+            {
+                sb.Append(lines[i]);
+                if (i < lines.Length - 1)
+                {
+                    sb.Append(CommentSplitChar);
+                }
+            }
+            return sb.ToString();
+        }
+
+        public static string GenIndentPrefix(int indent)
+        {
+            if (indent == 0) return "";
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < indent; i++)
+            {
+                sb.Append(CommentIndentChar);
+            }
+            return sb.ToString().Trim();
+        }
+
+        private static FileDescriptorSet ApplyComment(FileDescriptorSet set)
+        {
+            try
+            {
+                foreach (var file in set.file)
+                {
+                    foreach (var location in file.source_code_info.location)
+                    {
+                        if (location.path != null)
+                        {
+                            ApplyComment(file, location);
+                        }
+                    }
+                }
+            }
+            catch (Exception err)
+            {
+                Trace.WriteLine(err);
+            }
+            return set;
+        }
+
+        public static string CommentIndentChar = "  ";
+        public static string CommentSplitChar = " ";
+
     }
 }

@@ -116,21 +116,29 @@ using <xsl:value-of select="$ns"/>;
     <xsl:apply-templates select="file/FileDescriptorProto"/>
   </xsl:template>
 
-  
+
   <xsl:template match="FileDescriptorProto">
+    <xsl:apply-templates select="comments/string[.!='']"/>
+
 // Generated from: <xsl:value-of select="name"/>
-    
+
     <xsl:apply-templates select="dependency/string[.!='']"/>
     <xsl:variable name="namespace"><xsl:call-template name="PickNamespace">
       <xsl:with-param name="defaultNamespace" select="$defaultNamespace"/>
         </xsl:call-template>
       </xsl:variable>
-    <xsl:if test="string($namespace) != ''">
+
+  <xsl:if test="string($namespace) != ''">
 namespace <xsl:value-of select="translate($namespace,':-/\','__..')"/>
-{</xsl:if>
-    <xsl:apply-templates select="message_type | enum_type | service"/>
-    <xsl:if test="string($namespace) != ''">
-}</xsl:if></xsl:template>
+{
+  </xsl:if>
+      <xsl:apply-templates select="message_type | enum_type | service"/>
+  <xsl:if test="string($namespace) != ''">
+}
+  </xsl:if>
+  </xsl:template>
+
+  
   
   <xsl:template match="FileDescriptorProto/dependency/string">
 // Note: requires additional types generated from: <xsl:value-of select="."/></xsl:template>
@@ -147,8 +155,8 @@ namespace <xsl:value-of select="translate($namespace,':-/\','__..')"/>
       <xsl:otherwise><xsl:value-of select="$value"/></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-  
   <xsl:template match="DescriptorProto">
+  //---------------------------------------------------------------------------------------<xsl:apply-templates select="comments/string[.!='']"/>
   [<xsl:if test="$optionFullFramework">global::System.Serializable, </xsl:if>global::ProtoBuf.ProtoContract(Name=@"<xsl:value-of select="name"/>")]
   <xsl:if test="$optionDataContract">[global::System.Runtime.Serialization.DataContract(Name=@"<xsl:value-of select="name"/>")]
   </xsl:if><xsl:if test="$optionXml">[global::System.Xml.Serialization.XmlType(TypeName=@"<xsl:value-of select="name"/>")]
@@ -177,9 +185,10 @@ namespace <xsl:value-of select="translate($namespace,':-/\','__..')"/>
     global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
   }
+  
   </xsl:template>
-
-  <xsl:template match="DescriptorProto/name | DescriptorProto/extension_range | DescriptorProto/extension"/>
+  
+  <xsl:template match="DescriptorProto/name | DescriptorProto/extension_range | DescriptorProto/extension | DescriptorProto/comments"/>
   
   <xsl:template match="
                 FileDescriptorProto/message_type | FileDescriptorProto/enum_type | FileDescriptorProto/service
@@ -195,30 +204,31 @@ namespace <xsl:value-of select="translate($namespace,':-/\','__..')"/>
   </xsl:template>
 
   <xsl:template match="EnumDescriptorProto">
-    [global::ProtoBuf.ProtoContract(Name=@"<xsl:value-of select="name"/>")]
-    <xsl:if test="$optionDataContract">[global::System.Runtime.Serialization.DataContract(Name=@"<xsl:value-of select="name"/>")]
-    </xsl:if>
-    <xsl:if test="$optionXml">[global::System.Xml.Serialization.XmlType(TypeName=@"<xsl:value-of select="name"/>")]
-    </xsl:if><!--
+  //---------------------------------------------------------------------------------------<xsl:apply-templates select="comments/string[.!='']"/>
+  [global::ProtoBuf.ProtoContract(Name=@"<xsl:value-of select="name"/>")]
+  <xsl:if test="$optionDataContract">[global::System.Runtime.Serialization.DataContract(Name=@"<xsl:value-of select="name"/>")]
+  </xsl:if>
+  <xsl:if test="$optionXml">[global::System.Xml.Serialization.XmlType(TypeName=@"<xsl:value-of select="name"/>")]
+  </xsl:if><!--
     -->public enum <xsl:call-template name="pascal"/>
-    {
-      <xsl:apply-templates select="value"/>
-    }
+  {
+    <xsl:apply-templates select="value"/>
+  }
   </xsl:template>
 
   <xsl:template match="EnumValueDescriptorProto">
-      <xsl:variable name="value"><xsl:choose>
-        <xsl:when test="number"><xsl:value-of select="number"/></xsl:when>
-        <xsl:otherwise>0</xsl:otherwise>
-      </xsl:choose></xsl:variable>      
-      [global::ProtoBuf.ProtoEnum(Name=@"<xsl:value-of select="name"/>", Value=<xsl:value-of select="$value"/>)]<!--
-      --><xsl:if test="$optionDataContract">
-      [global::System.Runtime.Serialization.EnumMember(Value=@"<xsl:value-of select="name"/>")]</xsl:if><!--
-      --><xsl:if test="$optionXml">
-      [global::System.Xml.Serialization.XmlEnum(@"<xsl:value-of select="name"/>")]</xsl:if><!--
-      --><xsl:text disable-output-escaping="yes">
-      </xsl:text><xsl:call-template name="pascal"/><xsl:text xml:space="preserve"> = </xsl:text><xsl:value-of select="$value"/><xsl:if test="position()!=last()">,
-      </xsl:if>
+    <xsl:variable name="value"><xsl:choose>
+      <xsl:when test="number"><xsl:value-of select="number"/></xsl:when>
+      <xsl:otherwise>0</xsl:otherwise>
+    </xsl:choose></xsl:variable><xsl:apply-templates select="comments/string[.!='']"/>      
+    [global::ProtoBuf.ProtoEnum(Name=@"<xsl:value-of select="name"/>", Value=<xsl:value-of select="$value"/>)]<!--
+    --><xsl:if test="$optionDataContract">
+    [global::System.Runtime.Serialization.EnumMember(Value=@"<xsl:value-of select="name"/>")]</xsl:if><!--
+    --><xsl:if test="$optionXml">
+    [global::System.Xml.Serialization.XmlEnum(@"<xsl:value-of select="name"/>")]</xsl:if><!--
+    --><xsl:text disable-output-escaping="yes">
+    </xsl:text><xsl:call-template name="pascal"/><xsl:text xml:space="preserve"> = </xsl:text><xsl:value-of select="$value"/><xsl:if test="position()!=last()">,
+    </xsl:if>
   </xsl:template>
 
   <xsl:template match="FieldDescriptorProto" mode="field">
@@ -360,6 +370,7 @@ namespace <xsl:value-of select="translate($namespace,':-/\','__..')"/>
   <xsl:template match="FieldDescriptorProto" mode="checkDeprecated"><!--
     --><xsl:if test="options/deprecated='true'">global::System.Obsolete, </xsl:if><!--
   --></xsl:template>
+  
   <xsl:template match="FieldDescriptorProto[label='LABEL_OPTIONAL' or not(label)]">
     <xsl:variable name="propType"><xsl:apply-templates select="." mode="type"/></xsl:variable>
     <xsl:variable name="format"><xsl:apply-templates select="." mode="format"/></xsl:variable>
@@ -368,7 +379,8 @@ namespace <xsl:value-of select="translate($namespace,':-/\','__..')"/>
     <xsl:variable name="field"><xsl:apply-templates select="." mode="field"/></xsl:variable>
     <xsl:variable name="specified" select="$optionDetectMissing and ($primitiveType='struct' or $primitiveType='class')"/>
     <xsl:variable name="fieldType"><xsl:value-of select="$propType"/><xsl:if test="$specified and $primitiveType='struct'">?</xsl:if></xsl:variable>
-    private <xsl:value-of select="concat($fieldType,' ',$field)"/><xsl:if test="not($specified)"> = <xsl:value-of select="$defaultValue"/></xsl:if>;
+    
+    private <xsl:value-of select="concat($fieldType,' ',$field)"/><xsl:if test="not($specified)"> = <xsl:value-of select="$defaultValue"/></xsl:if>;<xsl:apply-templates select="comments/string[.!='']"/>
     [<xsl:apply-templates select="." mode="checkDeprecated"/>global::ProtoBuf.ProtoMember(<xsl:value-of select="number"/>, IsRequired = false, Name=@"<xsl:value-of select="name"/>", DataFormat = global::ProtoBuf.DataFormat.<xsl:value-of select="$format"/>)]<!--
     --><xsl:if test="not($specified)">
     [global::System.ComponentModel.DefaultValue(<xsl:value-of select="$defaultValue"/>)]</xsl:if><!--
@@ -390,7 +402,8 @@ namespace <xsl:value-of select="translate($namespace,':-/\','__..')"/>
     <xsl:variable name="type"><xsl:apply-templates select="." mode="type"/></xsl:variable>
     <xsl:variable name="format"><xsl:apply-templates select="." mode="format"/></xsl:variable>
     <xsl:variable name="field"><xsl:apply-templates select="." mode="field"/></xsl:variable>
-    private <xsl:value-of select="concat($type, ' ', $field)"/>;
+    
+    private <xsl:value-of select="concat($type, ' ', $field)"/>;<xsl:apply-templates select="comments/string[.!='']"/>
     [<xsl:apply-templates select="." mode="checkDeprecated"/>global::ProtoBuf.ProtoMember(<xsl:value-of select="number"/>, IsRequired = true, Name=@"<xsl:value-of select="name"/>", DataFormat = global::ProtoBuf.DataFormat.<xsl:value-of select="$format"/>)]<!--
     --><xsl:if test="$optionXml">
     [global::System.Xml.Serialization.XmlElement(@"<xsl:value-of select="name"/>", Order = <xsl:value-of select="number"/>)]
@@ -445,7 +458,8 @@ namespace <xsl:value-of select="translate($namespace,':-/\','__..')"/>
     <xsl:variable name="type"><xsl:apply-templates select="." mode="type"/></xsl:variable>
     <xsl:variable name="format"><xsl:apply-templates select="." mode="format"/></xsl:variable>
     <xsl:variable name="field"><xsl:apply-templates select="." mode="field"/></xsl:variable>
-    private <xsl:if test="not($optionXml)">readonly</xsl:if> global::System.Collections.Generic.List&lt;<xsl:value-of select="$type" />&gt; <xsl:value-of select="$field"/> = new global::System.Collections.Generic.List&lt;<xsl:value-of select="$type"/>&gt;();
+    
+    private <xsl:if test="not($optionXml)">readonly</xsl:if> global::System.Collections.Generic.List&lt;<xsl:value-of select="$type" />&gt; <xsl:value-of select="$field"/> = new global::System.Collections.Generic.List&lt;<xsl:value-of select="$type"/>&gt;();<xsl:apply-templates select="comments/string[.!='']"/>
     [<xsl:apply-templates select="." mode="checkDeprecated"/>global::ProtoBuf.ProtoMember(<xsl:value-of select="number"/>, Name=@"<xsl:value-of select="name"/>", DataFormat = global::ProtoBuf.DataFormat.<xsl:value-of select="$format"/><xsl:if test="options/packed='true'">, Options = global::ProtoBuf.MemberSerializationOptions.Packed</xsl:if>)]<!--
     --><xsl:if test="$optionDataContract">
     [global::System.Runtime.Serialization.DataMember(Name=@"<xsl:value-of select="name"/>", Order = <xsl:value-of select="number"/>, IsRequired = false)]
@@ -461,36 +475,40 @@ namespace <xsl:value-of select="translate($namespace,':-/\','__..')"/>
   </xsl:template>
 
   <xsl:template match="ServiceDescriptorProto">
-    <xsl:if test="($optionClientProxy or $optionDataContract)">
-    [global::System.ServiceModel.ServiceContract(Name = @"<xsl:value-of select="name"/>")]</xsl:if>
-    public interface I<xsl:value-of select="name"/>
-    {
-      <xsl:apply-templates select="method"/>
-    }
+  //---------------------------------------------------------------------------------------
+  <xsl:apply-templates select="comments/string[.!='']"/>
+  <xsl:if test="($optionClientProxy or $optionDataContract)">
+  [global::System.ServiceModel.ServiceContract(Name = @"<xsl:value-of select="name"/>")]</xsl:if>
+  public interface I<xsl:value-of select="name"/>
+  {
+    <xsl:apply-templates select="method"/>
+  }
     
-    <xsl:if test="$optionProtoRpc">
-    public class <xsl:value-of select="name"/>Client : global::ProtoBuf.ServiceModel.RpcClient
-    {
-      public <xsl:value-of select="name"/>Client() : base(typeof(I<xsl:value-of select="name"/>)) { }
-      <xsl:apply-templates select="method/MethodDescriptorProto" mode="protoRpc"/>
-    }
-    </xsl:if>
-    <xsl:apply-templates select="." mode="clientProxy"/>
+  <xsl:if test="$optionProtoRpc">
+  public class <xsl:value-of select="name"/>Client : global::ProtoBuf.ServiceModel.RpcClient
+  {
+    public <xsl:value-of select="name"/>Client() : base(typeof(I<xsl:value-of select="name"/>)) { }
+    <xsl:apply-templates select="method/MethodDescriptorProto" mode="protoRpc"/>
+  }
+  </xsl:if>
+  <xsl:apply-templates select="." mode="clientProxy"/>
     
   </xsl:template>
 
+  
+  
   <xsl:template match="MethodDescriptorProto">
+    <xsl:apply-templates select="comments/string[.!='']"/>
     <xsl:if test="($optionClientProxy or $optionDataContract)">
-        [global::System.ServiceModel.OperationContract(Name = @"<xsl:value-of select="name"/>")]
-        <xsl:if test="$optionFullFramework">[global::ProtoBuf.ServiceModel.ProtoBehavior]</xsl:if>
+    [global::System.ServiceModel.OperationContract(Name = @"<xsl:value-of select="name"/>")]
+    <xsl:if test="$optionFullFramework">[global::ProtoBuf.ServiceModel.ProtoBehavior]</xsl:if>
     </xsl:if>
-        <xsl:apply-templates select="output_type"/><xsl:text xml:space="preserve"> </xsl:text><xsl:value-of select="name"/>(<xsl:apply-templates select="input_type"/> request);
+    <xsl:apply-templates select="output_type"/><xsl:text xml:space="preserve"> </xsl:text><xsl:value-of select="name"/>(<xsl:apply-templates select="input_type"/> request);
     <xsl:if test="$optionAsynchronous and ($optionClientProxy or $optionDataContract)">
-        [global::System.ServiceModel.OperationContract(AsyncPattern = true, Name = @"<xsl:value-of select="name"/>")]
-        global::System.IAsyncResult Begin<xsl:value-of select="name"/>(<xsl:apply-templates select="input_type"/> request, global::System.AsyncCallback callback, object state);
+    [global::System.ServiceModel.OperationContract(AsyncPattern = true, Name = @"<xsl:value-of select="name"/>")]
+    global::System.IAsyncResult Begin<xsl:value-of select="name"/>(<xsl:apply-templates select="input_type"/> request, global::System.AsyncCallback callback, object state);
     <xsl:apply-templates select="output_type"/> End<xsl:value-of select="name"/>(global::System.IAsyncResult ar);
-    </xsl:if>
-  </xsl:template>
+    </xsl:if></xsl:template>
 
   <xsl:template match="MethodDescriptorProto" mode="protoRpc">
         <xsl:apply-templates select="output_type"/><xsl:text xml:space="preserve"> </xsl:text><xsl:value-of select="name"/>(<xsl:apply-templates select="input_type"/> request)
@@ -625,4 +643,32 @@ namespace <xsl:value-of select="translate($namespace,':-/\','__..')"/>
         }
     </xsl:if>
     </xsl:template>
+
+
+
+
+  <xsl:template match="FileDescriptorProto/comments/string">
+// <xsl:value-of select="."/>
+  </xsl:template>
+  
+  <xsl:template match="DescriptorProto/comments/string">
+  [global::ProtoBuf.ServiceModel.ProtoComment("<xsl:value-of select="."/>")]</xsl:template>
+  
+  <xsl:template match="EnumDescriptorProto/comments/string">
+  [global::ProtoBuf.ServiceModel.ProtoComment("<xsl:value-of select="."/>")]</xsl:template>
+  
+  <xsl:template match="ServiceDescriptorProto/comments/string">
+  [global::ProtoBuf.ServiceModel.ProtoComment("<xsl:value-of select="."/>")]</xsl:template>
+
+  
+  <xsl:template match="FieldDescriptorProto/comments/string">
+    [global::ProtoBuf.ServiceModel.ProtoComment("<xsl:value-of select="."/>")]</xsl:template>
+
+  <xsl:template match="EnumValueDescriptorProto/comments/string">
+    [global::ProtoBuf.ServiceModel.ProtoComment("<xsl:value-of select="."/>")]</xsl:template>
+  
+  <xsl:template match="MethodDescriptorProto/comments/string">
+    [global::ProtoBuf.ServiceModel.ProtoComment("<xsl:value-of select="."/>")]
+    </xsl:template>
+
 </xsl:stylesheet>

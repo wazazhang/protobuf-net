@@ -16,9 +16,9 @@ namespace ProtoBuf.CodeGenerator
             if (stderr == null) throw new ArgumentNullException("stderr");
             if (files == null) throw new ArgumentNullException("files");
             if (string.IsNullOrEmpty(path)) throw new ArgumentNullException("path");
-            
+
             bool deletePath = false;
-            if(!IsValidBinary(path))
+            if (!IsValidBinary(path))
             { // try to use protoc
                 path = CompileDescriptor(path, stderr, args);
                 deletePath = true;
@@ -32,7 +32,7 @@ namespace ProtoBuf.CodeGenerator
             }
             finally
             {
-                if(deletePath)
+                if (deletePath)
                 {
                     File.Delete(path);
                 }
@@ -52,7 +52,7 @@ namespace ProtoBuf.CodeGenerator
             {
                 loaderPath = loaderPath.Substring(6);
             }
-            return Path.Combine(Path.GetDirectoryName(loaderPath), path);   
+            return Path.Combine(Path.GetDirectoryName(loaderPath), path);
         }
         public static string GetProtocPath(out string folder)
         {
@@ -73,26 +73,29 @@ namespace ProtoBuf.CodeGenerator
                 "/usr/local/bin/protoc",
                 "/opt/local/bin/protoc"
             };
-            for(int i=0; i<UnixProtoc.Length; i++) {
-                if(File.Exists(UnixProtoc[i])) {
+            for (int i = 0; i < UnixProtoc.Length; i++)
+            {
+                if (File.Exists(UnixProtoc[i]))
+                {
                     folder = null;
                     return UnixProtoc[i];
                 }
             }
-            
+
             folder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("n"));
             Directory.CreateDirectory(folder);
             string path = Path.Combine(folder, Name);
-            
+
             // look inside ourselves...
-            using(Stream resStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(
+            using (Stream resStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(
                 typeof(InputFileLoader).Namespace + "." + Name))
-            using(Stream outFile = File.OpenWrite(path))
+            using (Stream outFile = File.OpenWrite(path))
             {
                 long len = 0;
                 int bytesRead;
                 byte[] buffer = new byte[4096];
-                while((bytesRead = resStream.Read(buffer, 0, buffer.Length)) > 0) {
+                while ((bytesRead = resStream.Read(buffer, 0, buffer.Length)) > 0)
+                {
                     outFile.Write(buffer, 0, bytesRead);
                     len += bytesRead;
                 }
@@ -100,26 +103,24 @@ namespace ProtoBuf.CodeGenerator
             }
             return path;
         }
-        
+
         private static string CompileDescriptor(string path, TextWriter stderr, params string[] args)
         {
-            
+
             string tmp = Path.GetTempFileName();
             string tmpFolder = null, protocPath = null;
             try
             {
-                protocPath = GetProtocPath(out tmpFolder);
-                ProcessStartInfo psi = new ProcessStartInfo(
-                    protocPath,
-                    string.Format(@"""--descriptor_set_out={0}"" ""--proto_path={1}"" ""--proto_path={2}"" ""--proto_path={3}"" --error_format=gcc ""{4}"" {5}",
+                string arguments = string.Format(@"""--include_source_info"" ""--descriptor_set_out={0}"" ""--proto_path={1}"" ""--proto_path={2}"" ""--proto_path={3}"" --error_format=gcc ""{4}"" {5}",
                              tmp, // output file
                              Path.GetDirectoryName(path), // primary search path
                              Environment.CurrentDirectory, // primary search path
                              Path.GetDirectoryName(protocPath), // secondary search path
                              Path.Combine(Environment.CurrentDirectory, path), // input file
                              string.Join(" ", args) // extra args
-                    )
-                );
+                    );
+                protocPath = GetProtocPath(out tmpFolder);
+                ProcessStartInfo psi = new ProcessStartInfo(protocPath, arguments);
                 Debug.WriteLine(psi.FileName + " " + psi.Arguments, "protoc");
 
                 psi.CreateNoWindow = true;
@@ -152,7 +153,7 @@ namespace ProtoBuf.CodeGenerator
             }
             catch
             {
-                try { if(File.Exists(tmp)) File.Delete(tmp); }
+                try { if (File.Exists(tmp)) File.Delete(tmp); }
                 catch { } // swallow
                 throw;
             }
@@ -163,7 +164,7 @@ namespace ProtoBuf.CodeGenerator
                     try { Directory.Delete(tmpFolder, true); }
                     catch { } // swallow
                 }
-                
+
             }
         }
 
@@ -185,15 +186,15 @@ namespace ProtoBuf.CodeGenerator
 
         static ThreadStart DumpStream(TextReader reader, TextWriter writer)
         {
-            return (ThreadStart) delegate
-             {
-                 string line;
-                 while ((line = reader.ReadLine()) != null)
-                 {
-                     Debug.WriteLine(line);
-                     writer.WriteLine(line);
-                 }
-             };
+            return (ThreadStart)delegate
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    Debug.WriteLine(line);
+                    writer.WriteLine(line);
+                }
+            };
         }
 
         static bool IsValidBinary(string path)
