@@ -53,7 +53,8 @@ namespace ProtoBuf.Meta
         public object DefaultValue
         {
             get { return defaultValue; }
-            set {
+            set
+            {
                 ThrowIfFrozen();
                 defaultValue = value;
             }
@@ -63,8 +64,8 @@ namespace ProtoBuf.Meta
         /// <summary>
         /// Creates a new ValueMember instance
         /// </summary>
-        public ValueMember(RuntimeTypeModel model, Type parentType, int fieldNumber, MemberInfo member, Type memberType, Type itemType, Type defaultType, DataFormat dataFormat, object defaultValue) 
-            : this(model, fieldNumber,memberType, itemType, defaultType, dataFormat)
+        public ValueMember(RuntimeTypeModel model, Type parentType, int fieldNumber, MemberInfo member, Type memberType, Type itemType, Type defaultType, DataFormat dataFormat, object defaultValue)
+            : this(model, fieldNumber, memberType, itemType, defaultType, dataFormat)
         {
             if (member == null) throw new ArgumentNullException("member");
             if (parentType == null) throw new ArgumentNullException("parentType");
@@ -73,11 +74,11 @@ namespace ProtoBuf.Meta
             this.member = member;
             this.parentType = parentType;
             if (fieldNumber < 1 && !Helpers.IsEnum(parentType)) throw new ArgumentOutOfRangeException("fieldNumber");
-//#if WINRT
+            //#if WINRT
             if (defaultValue != null && model.MapType(defaultValue.GetType()) != memberType)
-//#else
-//            if (defaultValue != null && !memberType.IsInstanceOfType(defaultValue))
-//#endif
+            //#else
+            //            if (defaultValue != null && !memberType.IsInstanceOfType(defaultValue))
+            //#endif
             {
                 defaultValue = ParseDefaultValue(memberType, defaultValue);
             }
@@ -96,7 +97,7 @@ namespace ProtoBuf.Meta
         /// <summary>
         /// Creates a new ValueMember instance
         /// </summary>
-        internal ValueMember(RuntimeTypeModel model, int fieldNumber, Type memberType, Type itemType, Type defaultType, DataFormat dataFormat) 
+        internal ValueMember(RuntimeTypeModel model, int fieldNumber, Type memberType, Type itemType, Type defaultType, DataFormat dataFormat)
         {
 
             if (memberType == null) throw new ArgumentNullException("memberType");
@@ -205,7 +206,8 @@ namespace ProtoBuf.Meta
         /// Specifies the rules used to process the field; this is used to determine the most appropriate
         /// wite-type, but also to describe subtypes <i>within</i> that wire-type (such as SignedVariant)
         /// </summary>
-        public DataFormat DataFormat {
+        public DataFormat DataFormat
+        {
             get { return dataFormat; }
             set { ThrowIfFrozen(); this.dataFormat = value; }
         }
@@ -305,7 +307,7 @@ namespace ProtoBuf.Meta
             ThrowIfFrozen();
             this.getSpecified = getSpecified;
             this.setSpecified = setSpecified;
-            
+
         }
         private void ThrowIfFrozen()
         {
@@ -328,7 +330,7 @@ namespace ProtoBuf.Meta
                 // apply tags
                 if (itemType != null && SupportNull)
                 {
-                    if(IsPacked)
+                    if (IsPacked)
                     {
                         throw new NotSupportedException("Packed encodings cannot support null values");
                     }
@@ -342,14 +344,14 @@ namespace ProtoBuf.Meta
                 }
                 // apply lists if appropriate
                 if (itemType != null)
-                {                    
+                {
 #if NO_GENERICS
                     Type underlyingItemType = itemType;
 #else
                     Type underlyingItemType = SupportNull ? itemType : Helpers.GetUnderlyingType(itemType) ?? itemType;
 #endif
                     Helpers.DebugAssert(underlyingItemType == ser.ExpectedType
-                        || (ser.ExpectedType == typeof(object) && !Helpers.IsValueType(underlyingItemType))
+                        || ((ser.ExpectedType.Equals(typeof(object))) && !Helpers.IsValueType(underlyingItemType))
                         , "Wrong type in the tail; expected {0}, received {1}", ser.ExpectedType, underlyingItemType);
                     if (memberType.IsArray)
                     {
@@ -408,8 +410,10 @@ namespace ProtoBuf.Meta
             }
         }
 
-        private static WireType GetIntWireType(DataFormat format, int width) {
-            switch(format) {
+        private static WireType GetIntWireType(DataFormat format, int width)
+        {
+            switch (format)
+            {
                 case DataFormat.ZigZag: return WireType.SignedVariant;
                 case DataFormat.FixedSize: return width == 32 ? WireType.Fixed32 : WireType.Fixed64;
                 case DataFormat.TwosComplement:
@@ -551,7 +555,7 @@ namespace ProtoBuf.Meta
                             throw new InvalidOperationException(message);
                         }
                         MetaType meta = model[type];
-                        if (asReference && meta.IsAutoTuple) options |= BclHelpers.NetObjectOptions.LateSet;                        
+                        if (asReference && meta.IsAutoTuple) options |= BclHelpers.NetObjectOptions.LateSet;
                         if (meta.UseConstructor) options |= BclHelpers.NetObjectOptions.UseConstructor;
                     }
                     return new NetObjectSerializer(model, type, key, options);
@@ -609,7 +613,7 @@ namespace ProtoBuf.Meta
         public bool SupportNull
         {
             get { return HasFlag(OPTIONS_SupportNull); }
-            set { SetFlag(OPTIONS_SupportNull, value, true);}
+            set { SetFlag(OPTIONS_SupportNull, value, true); }
         }
 
         internal string GetSchemaTypeName(bool applyNetObjectProxy, ref bool requiresBclImport)
@@ -619,7 +623,7 @@ namespace ProtoBuf.Meta
             return model.GetSchemaTypeName(effectiveType, DataFormat, applyNetObjectProxy && asReference, applyNetObjectProxy && dynamicType, ref requiresBclImport);
         }
 
-        
+
         internal sealed class Comparer : System.Collections.IComparer
 #if !NO_GENERICS
 , System.Collections.Generic.IComparer<ValueMember>

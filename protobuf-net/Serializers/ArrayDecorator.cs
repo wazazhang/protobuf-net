@@ -35,14 +35,14 @@ namespace ProtoBuf.Serializers
 #endif
 
             Helpers.DebugAssert(underlyingItemType == Tail.ExpectedType
-                || (Tail.ExpectedType == typeof(object) && !Helpers.IsValueType(underlyingItemType)), "invalid tail");
+                || ((Tail.ExpectedType.Equals(typeof(object))) && !Helpers.IsValueType(underlyingItemType)), "invalid tail");
             Helpers.DebugAssert(Tail.ExpectedType != model.MapType(typeof(byte)), "Should have used BlobSerializer");
             if ((writePacked || packedWireType != WireType.None) && fieldNumber <= 0) throw new ArgumentOutOfRangeException("fieldNumber");
             if (!ListDecorator.CanPack(packedWireType))
             {
                 if (writePacked) throw new InvalidOperationException("Only simple data-types can use packed encoding");
                 packedWireType = WireType.None;
-            }       
+            }
             this.fieldNumber = fieldNumber;
             this.packedWireType = packedWireType;
             if (writePacked) options |= OPTIONS_WritePacked;
@@ -64,7 +64,7 @@ namespace ProtoBuf.Serializers
                 bool writePacked = (options & OPTIONS_WritePacked) != 0;
                 using (Compiler.Local token = writePacked ? new Compiler.Local(ctx, ctx.MapType(typeof(SubItemToken))) : null)
                 {
-                    Type mappedWriter = ctx.MapType(typeof (ProtoWriter));
+                    Type mappedWriter = ctx.MapType(typeof(ProtoWriter));
                     if (writePacked)
                     {
                         ctx.LoadValue(fieldNumber);
@@ -210,7 +210,8 @@ namespace ProtoBuf.Serializers
                 ListDecorator.EmitReadList(ctx, list, Tail, listType.GetMethod("Add"), packedWireType, false);
 
                 // leave this "using" here, as it can share the "FieldNumber" local with EmitReadList
-                using(Compiler.Local oldLen = AppendToCollection ? new ProtoBuf.Compiler.Local(ctx, ctx.MapType(typeof(int))) : null) {
+                using (Compiler.Local oldLen = AppendToCollection ? new ProtoBuf.Compiler.Local(ctx, ctx.MapType(typeof(int))) : null)
+                {
                     Type[] copyToArrayInt32Args = new Type[] { ctx.MapType(typeof(Array)), ctx.MapType(typeof(int)) };
 
                     if (AppendToCollection)
@@ -238,7 +239,7 @@ namespace ProtoBuf.Serializers
                         ctx.LoadValue(list);
                         ctx.LoadValue(newArr);
                         ctx.LoadValue(oldLen);
-                        
+
                     }
                     else
                     {
