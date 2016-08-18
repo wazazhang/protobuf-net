@@ -1,7 +1,7 @@
 # protobuf-net
-Protocol Buffers library for idiomatic .NET 
 
-auto generate comment for proto to cs
+Protocol Buffers library for Unity.
+Preserving proto comments when generating C# with protobuf-net
 
 ### input proto file
 
